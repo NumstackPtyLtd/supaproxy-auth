@@ -51,8 +51,9 @@ export function createAuthRoutes(deps: AuthRoutesDeps) {
 
     const passwordHash = await passwordService.hash(admin_password)
 
-    await deps.repo.createOrg(orgId, org_name)
-    await deps.repo.createUser(userId, orgId, admin_name, admin_email, passwordHash, 'admin')
+    const slug = org_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    await deps.repo.createOrg(orgId, org_name, slug)
+    await deps.repo.createUser(userId, orgId, admin_email, admin_name, passwordHash, 'admin')
     await deps.repo.createTeam(teamId, orgId, `${org_name} Team`)
     await deps.repo.createWorkspace(workspaceId, orgId, teamId, '#general', defaultModel, defaultSystemPrompt)
 
@@ -105,7 +106,7 @@ export function createAuthRoutes(deps: AuthRoutesDeps) {
       return c.json({ error: 'invalid_credentials' }, 401)
     }
 
-    const token = tokenService.sign({ id: user.id, email: user.email, name: user.name, role: user.role, org_id: user.org_id })
+    const token = tokenService.sign({ id: user.id, email: user.email, name: user.name, role: user.org_role, org_id: user.org_id || '' })
 
     setCookie(c, cookieName, token, {
       httpOnly: true,
@@ -117,7 +118,7 @@ export function createAuthRoutes(deps: AuthRoutesDeps) {
     })
 
     if (isFormSubmit) return c.redirect(`${dashboardUrl}/workspaces`)
-    return c.json({ status: 'ok', user: { id: user.id, email: user.email, name: user.name, role: user.role } })
+    return c.json({ status: 'ok', user: { id: user.id, email: user.email, name: user.name, role: user.org_role } })
   })
 
   auth.get('/api/auth/session', (c) => {
