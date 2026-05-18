@@ -1,0 +1,6 @@
+export { createAuthRoutes, AuthConflictError, AuthenticationError } from './routes.js';
+export { createTokenService } from './token.js';
+export { passwordService } from './password.js';
+export { createRequireAuth, createOptionalAuth } from './middleware.js';
+export type { TokenPayload, AuthUser, BasicAuthOptions, AuthRepository } from './types.js';
+//# sourceMappingURL=index.d.ts.map
